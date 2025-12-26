@@ -195,7 +195,7 @@ const sendInstitutionEmailVerification = asyncHandler(async (req, res) => {
     throw new ApiError("Email already verified", 400);
   }
 
-  const verificationToken = institution.getEmailVerificationToken();
+  const verificationToken = institution.getVerificationToken();
   await institution.save({ validateBeforeSave: false });
 
   const verifyUrl = `${process.env.FRONTEND_URL}/institution/verify-email/${verificationToken}`;

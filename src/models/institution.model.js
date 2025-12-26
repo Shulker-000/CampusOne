@@ -79,32 +79,33 @@ const instituitonSchema = new mongoose.Schema(
         timestamps: true
     }
 );
+instituitonSchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
 
-instituitonSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) {
-        return next();
-    }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 instituitonSchema.methods.isPasswordCorrect = async function (candidatePassword) {
-    return await bcrypt.compare(candidatePassword, this.password);
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-instituitonSchema.methods.generateAccessToken = async function () {
-    return jwt.sign({ id: this._id }, process.env.JWT_SECRET, { expiresIn: '100h' });
+instituitonSchema.methods.generateAccessToken = function () {
+  return jwt.sign(
+    { id: this._id },
+    process.env.JWT_SECRET,
+    { expiresIn: "100h" }
+  );
 };
 
-instituitonSchema.methods.getResetPasswordToken = async function () {
+instituitonSchema.methods.getResetPasswordToken = function () {
     const resetToken = crypto.randomBytes(20).toString("hex");
     this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
     this.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
     return resetToken;
 };
 
-instituitonSchema.methods.getVerificationToken  = async function () {
+instituitonSchema.methods.getVerificationToken  = function () {
     const verificationToken = crypto.randomBytes(20).toString("hex");
     this.emailVerificationToken = crypto.createHash("sha256").update(verificationToken).digest("hex");
     this.emailVerificationTokenExpires = Date.now() + 15 * 60 * 1000;

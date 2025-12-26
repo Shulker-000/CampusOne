@@ -25,11 +25,8 @@ router.post("/reset-password/:token", resetInstitutionPassword);
 router.get("/verify-email/:token", verifyInstitutionEmail);
 
 // PROTECTED ROUTES
-
 router.get("/current-institution", validateInstitutionJWT, getCurrentInstitution);
-
 router.post("/logout", validateInstitutionJWT, logoutInstitution);
-
 router.post(
     "/send-email-verification",
     validateInstitutionJWT,
