@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
+import institutionRoutes from './routes/institution.routes.js';
 
 dotenv.config();
 const app = express();
@@ -21,6 +22,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.use('/api/institutions', institutionRoutes);
 
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).json({
