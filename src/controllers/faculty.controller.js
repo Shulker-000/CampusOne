@@ -187,7 +187,6 @@ const toggleFacultyInCharge = asyncHandler(async (req, res) => {
 
 export {
     createFaculty,
-    registerFaculty,
     editFaculty,
     getFacultiesByInstitution,
     getFacultiesByDepartment,

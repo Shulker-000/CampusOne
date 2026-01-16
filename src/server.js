@@ -2,7 +2,12 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env" });
 
 import { dbConnect } from "./db/index.js";
-import { kafkaProducer } from "./kafka/producer.js"; 
+let kafkaProducer = null;
+if (process.env.NODE_ENV !== "production") {
+  const mod = await import("./kafka/producer.js");
+  kafkaProducer = mod.kafkaProducer;
+}
+
 
 const PORT = process.env.PORT;
 
@@ -12,9 +17,10 @@ const startServer = async () => {
   try {
     await dbConnect();
     console.log("📦 MongoDB connected");
-
-    await kafkaProducer.connect();  
-    console.log("📨 Kafka Producer connected");
+    if (process.env.NODE_ENV !== "production") {
+      await kafkaProducer.connect();
+      console.log("📨 Kafka Producer connected");
+    }
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);

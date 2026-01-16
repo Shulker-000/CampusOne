@@ -9,10 +9,15 @@ const startWorker = async () => {
   try {
     await dbConnect();
     console.log("📦 Worker MongoDB connected");
+    if (process.env.NODE_ENV === "production") {
+      console.log("🚫 Worker disabled in production");
+      process.exit(0);
+    }
+
 
     await startStudentConsumer();
     console.log("⚙️ Worker Student Kafka Consumer running");
-    
+
     await startFacultyConsumer();
     console.log("⚙️ Worker Faculty Kafka Consumer running");
 

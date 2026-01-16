@@ -34,7 +34,7 @@ export const startFacultyConsumer = async () => {
           { _id: importId },
           { 
             $inc: { processed: 1, failed: 1 },
-            $push: { errors: { row: rowNumber, reason: err.message } }
+            $push: { failedRows: { row: rowNumber, reason: err.message } }
           }
         );
       }
