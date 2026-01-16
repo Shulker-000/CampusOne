@@ -211,7 +211,6 @@ const updateHostelStatus = asyncHandler(async (req, res) => {
 
 export {
     createStudent,
-    registerStudent,
     editStudent,
     getStudentsByInstitution,
     getStudentsByDepartment,

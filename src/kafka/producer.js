@@ -1,10 +1,25 @@
 import { Kafka, Partitioners } from "kafkajs";
 
-const kafka = new Kafka({
-  clientId: "campusone",
-  brokers: ["localhost:9092"],
-  createPartitioner: Partitioners.LegacyPartitioner,
-});
+let kafkaProducer = null;
 
-export const kafkaProducer = kafka.producer();
-await kafkaProducer.connect();
+// Disable Kafka in Production
+if (process.env.NODE_ENV !== "production") {
+  const kafka = new Kafka({
+    clientId: "campusone",
+  brokers: ["localhost:9092"],
+    createPartitioner: Partitioners.LegacyPartitioner,
+  });
+
+  kafkaProducer = kafka.producer();
+
+  try {
+    await kafkaProducer.connect();
+    console.log("📨 Kafka Producer connected (dev)");
+  } catch (err) {
+    console.warn("⚠️ Kafka connection failed (dev)", err);
+  }
+} else {
+  console.log("🚫 Kafka disabled in production");
+}
+
+export { kafkaProducer };

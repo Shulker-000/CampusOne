@@ -28,7 +28,7 @@ const studentImportSchema = new mongoose.Schema({
       student: { type: Object, default: {} }
     }
   ],
-  errors: [
+  failedRows: [
     {
       row: Number,
       reason: String
@@ -57,7 +57,7 @@ const facultyImportSchema = new mongoose.Schema({
       faculty: { type: Object, default: {} }
     }
   ],
-  errors: [
+  failedRows: [
     {
       row: Number,
       reason: String

@@ -7,13 +7,13 @@ const errorHandler = (err, req, res, next) => {
         return res.status(err.statusCode).json({
             success: false,
             message: err.message,
-            errors: Array.isArray(err.errors) ? err.errors : [err.errors], // Ensure always an array
+            failedRows: Array.isArray(err.errors) ? err.errors : [err.errors], // Ensure always an array
         });
     }
     return res.status(500).json({
         success: false,
         message: "Internal Server Error",
-        errors: [{ field: "unknown", message: err.message }],
+        failedRows: [{ field: "unknown", message: err.message }],
     });
 };
 
