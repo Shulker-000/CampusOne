@@ -46,6 +46,16 @@ const studentSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Course'
         }],
+        prevCourses: [{
+            courseId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Course'
+            },
+            semester: {
+                type: Number,
+                required: true
+            }
+        }],
         semester: {
             type: Number,
             required: true
