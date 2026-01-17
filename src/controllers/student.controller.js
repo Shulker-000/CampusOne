@@ -182,6 +182,48 @@ const updateStudentCourses = asyncHandler(async (req, res) => {
     );
 });
 
+const updateStudentSemester = asyncHandler(async (req, res) => {
+    const { studentId } = req.params;
+
+    const updated = await Student.findOneAndUpdate(
+        { _id: studentId },
+        [
+            {
+                $set: {
+                    prevCourses: {
+                        $concatArrays: [
+                            "$prevCourses",
+                            {
+                                $map: {
+                                    input: "$courseIds",
+                                    as: "c",
+                                    in: {
+                                        courseId: "$$c",
+                                        semester: "$semester"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            },
+            { $set: { courseIds: [] } },
+            { $set: { semester: { $add: ["$semester", 1] } } }
+        ],
+        {
+            new: true,
+            runValidators: true
+        }
+    );
+
+    if (!updated) {
+        throw new ApiError("Student not found", 404);
+    }
+
+    res.json(new ApiResponse("Semester updated successfully", 200, updated));
+});
+
+
 const updateHostelStatus = asyncHandler(async (req, res) => {
     const { studentId } = req.params;
     const { hostelStatus } = req.body;
@@ -218,5 +260,6 @@ export {
     deleteStudent,
     updateStudentDepartment,
     updateStudentCourses,
+    updateStudentSemester,
     updateHostelStatus
 };
