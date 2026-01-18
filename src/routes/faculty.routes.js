@@ -3,9 +3,11 @@ import {
     createFaculty,
     deleteFaculty,
     editFaculty,
+    finishFacultyCourse,
     getFacultiesByDepartment,
     getFacultiesByInstitution,
     getFacultyById,
+    modifyActiveStatus,
     toggleFacultyInCharge,
     updateFacultyCourses,
     updateFacultyDepartment
@@ -30,5 +32,7 @@ router.put("/update-department/:facultyId", validateInstitutionJWT, updateFacult
 router.put("/update-courses/:facultyId", validateInstitutionJWT, updateFacultyCourses);
 router.put("/update-coursesById/:facultyId", validateUserJWT, updateFacultyCourses);
 router.put("/toggle-in-charge/:facultyId", validateInstitutionJWT, toggleFacultyInCharge);
+router.put("/finish-course/:facultyId/:courseId", validateUserJWT, finishFacultyCourse);
+router.put("/change-status/:facultyId", validateInstitutionJWT, modifyActiveStatus);
 
 export default router;
