@@ -29,14 +29,49 @@ const facultySchema = new mongoose.Schema(
             default: false
         },
         // TODO: Add validation to ensure courses belong to the department
-        courses: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Course'
-        }],
+        courses: {
+            type: [{
+                courseId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Course'
+                },
+                semester: {
+                    type: Number,
+                    required: true
+                },
+                // batch = branchCode + yearofAdmission
+                batch: {
+                    type: String,
+                    required: true
+                }
+            }],
+            default: []
+        },
+        prevCourses: {
+            type: [{
+                courseId: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Course'
+                },
+                semester: {
+                    type: Number,
+                    required: true
+                },
+                batch: {
+                    type: String,
+                    required: true
+                }
+            }],
+            default: []
+        },
         dateOfJoining: {
             type: Date,
             required: true
         },
+        isActive: {
+            type: Boolean,
+            default: true
+        }
     },
     {
         timestamps: true
