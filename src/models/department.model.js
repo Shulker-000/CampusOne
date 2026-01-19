@@ -34,7 +34,7 @@ departmentSchema.index({ institutionId: 1 });
 
 departmentSchema.index(
     { headOfDepartment: 1 },
-    { unique: true, partialFilterExpression: { headOfDepartment: { $exists: true } } }
+    { unique: true, partialFilterExpression: { headOfDepartment: { $ne: null } } }
 );
 departmentSchema.index({ code: 1, institutionId: 1 }, { unique: true });
 
