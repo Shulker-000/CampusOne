@@ -15,7 +15,7 @@ const departmentSchema = new mongoose.Schema(
         code: {
             type: String,
             required: true,
-            trim: true,
+            trim: true
         },
         headOfDepartment: {
             type: mongoose.Schema.Types.ObjectId,
@@ -27,13 +27,12 @@ const departmentSchema = new mongoose.Schema(
             required: true
         }
     },
-    {
-        timestamps: true
-    }
+    { timestamps: true }
 );
 
 departmentSchema.index({ institutionId: 1 });
-db.depts.createIndex(
+
+departmentSchema.index(
     { headOfDepartment: 1 },
     { unique: true, partialFilterExpression: { headOfDepartment: { $exists: true } } }
 );
