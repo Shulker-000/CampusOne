@@ -75,5 +75,18 @@ const studentSchema = new mongoose.Schema(
     }
 );
 
-const Student = mongoose.model("Student", studentSchema);
-export default Student;
+
+studentSchema.index({ branchId: 1 });
+studentSchema.index({ courseIds: 1 });
+studentSchema.index({ "prevCourses.courseId": 1 });
+studentSchema.index({ enrollmentNumber: 1 }, { unique: true });
+studentSchema.index({ userId: 1 }, { unique: true });
+
+studentSchema.index({
+    institutionId: 1,
+    courseIds: 1,
+    branchId: 1,
+    admissionYear: 1
+});
+
+export const Student = mongoose.model("Student", studentSchema);
