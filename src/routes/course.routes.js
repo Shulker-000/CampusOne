@@ -17,7 +17,7 @@ router.get("/department/:departmentId", getCoursesByDepartment);
 router.get("/:courseId", getCourseById);
 
 // Protected Routes
-router.post("create-course/", validateInstitutionJWT, createCourse);
+router.post("/create-course", validateInstitutionJWT, createCourse);
 router.put("/:courseId", validateInstitutionJWT, updateCourse);
 router.delete("/:courseId", validateInstitutionJWT, deleteCourse);
 router.put("/change-status/:studentId", validateInstitutionJWT, modifyStatus);
