@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import Department from "../models/department.model.js";
+import { Faculty } from "../models/faculty.model.js";
 
 const createCourse = asyncHandler(async (req, res) => {
   const { departmentId, name, code, credits, semester } = req.body;
@@ -166,6 +167,72 @@ const modifyStatus = asyncHandler(async (req, res) => {
   );
 });
 
+const findFacultyByCourseId = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const courseExists = await Course.findById(courseId);
+  if (!courseExists) {
+    throw new ApiError("Course not found", 404);
+  }
+  const faculties = await Faculty.find({ "courses.courseId": courseId });
+  if (faculties.length === 0) {
+    throw new ApiError("No faculties found for this course", 404);
+  }
+  res.json(
+    new ApiResponse("Faculties fetched successfully", 200, faculties)
+  );
+});
+
+const findFacultyByPrevCourseId = asyncHandler(async (req, res) => {
+  const { courseId } = req.params;
+  const courseExists = await Course.findById(courseId);
+  if (!courseExists) {
+    throw new ApiError("Course not found", 404);
+  }
+  const faculties = await Faculty.find({ "prevCourses.courseId": courseId });
+  if (faculties.length === 0) {
+    throw new ApiError("No faculties found for this previous course", 404);
+  }
+  res.json(
+    new ApiResponse("Faculties fetched successfully", 200, faculties)
+  );
+});
+
+const findFacultiesByCourseAndBatch = asyncHandler(async (req, res) => {
+  const { courseId, batch } = req.params;
+  const courseExists = await Course.findById(courseId);
+  if (!courseExists) {
+    throw new ApiError("Course not found", 404);
+  }
+  const faculties = await Faculty.find({
+    "courses.courseId": courseId,
+    "courses.batch": batch
+  });
+  if (faculties.length === 0) {
+    throw new ApiError("No faculties found for this course and batch", 404);
+  }
+  res.json(
+    new ApiResponse("Faculties fetched successfully", 200, faculties)
+  );
+});
+
+const findFacultiesByPrevCourseAndBatch = asyncHandler(async (req, res) => {
+  const { courseId, batch } = req.params;
+  const courseExists = await Course.findById(courseId);
+  if (!courseExists) {
+    throw new ApiError("Course not found", 404);
+  }
+  const faculties = await Faculty.find({
+    "prevCourses.courseId": courseId,
+    "prevCourses.batch": batch
+  });
+  if (faculties.length === 0) {
+    throw new ApiError("No faculties found for this previous course and batch", 404);
+  }
+  res.json(
+    new ApiResponse("Faculties fetched successfully", 200, faculties)
+  );
+});
+
 export {
   createCourse,
   getCoursesByDepartment,
@@ -173,5 +240,9 @@ export {
   updateCourse,
   deleteCourse,
   modifyStatus,
-  getCourseByInstitution
+  getCourseByInstitution,
+  findFacultyByCourseId,
+  findFacultyByPrevCourseId,
+  findFacultiesByCourseAndBatch,
+  findFacultiesByPrevCourseAndBatch
 };
