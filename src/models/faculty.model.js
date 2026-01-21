@@ -79,7 +79,7 @@ const facultySchema = new mongoose.Schema(
 );
 
 facultySchema.index({ institutionId: 1, departmentId: 1, isActive: 1 });
-facultySchema.index({ institutionId: 1, "courses.courseId": 1, "courses.batch": 1, "courses.semester": 1 });
-facultySchema.index({ institutionId: 1, "prevCourses.courseId": 1 });
+facultySchema.index({ institutionId: 1, "courses.courseId": 1, "courses.batch": 1 });
+facultySchema.index({ institutionId: 1, "prevCourses.courseId": 1, "prevCourses.batch": 1 });
 
 export const Faculty = mongoose.model("Faculty", facultySchema);
