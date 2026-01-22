@@ -5,6 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import Department from "../models/department.model.js";
 import { Faculty } from "../models/faculty.model.js";
 import mongoose from "mongoose";
+import { Student } from '../models/student.model';
 
 const createCourse = asyncHandler(async (req, res) => {
   const { departmentId, name, code, credits, semester } = req.body;
@@ -134,6 +135,7 @@ const updateCourse = asyncHandler(async (req, res) => {
 
 const deleteCourse = asyncHandler(async (req, res) => {
   const { courseId } = req.params;
+  // TODO: remove course from faculties' courses and prevCourses arrays as well as from the student courses
 
   const course = await Course.findByIdAndDelete(courseId);
 
@@ -169,12 +171,16 @@ const modifyStatus = asyncHandler(async (req, res) => {
 });
 
 const findFacultyByCourseId = asyncHandler(async (req, res) => {
-  const { courseId } = req.params;
-  const courseExists = await Course.findById(courseId);
+  const { courseId, institutionId } = req.params;
+  const courseExists = await Course.findOne({ _id: courseId, institutionId });
   if (!courseExists) {
     throw new ApiError("Course not found", 404);
   }
-  const faculties = await Faculty.find({ "courses.courseId": courseId });
+  const faculties = await Faculty.find({
+    institutionId,
+    isActive: true,
+    "courses.courseId": courseId
+  }).populate("userId", "name avatar").lean();
   if (faculties.length === 0) {
     throw new ApiError("No faculties found for this course", 404);
   }
@@ -184,12 +190,16 @@ const findFacultyByCourseId = asyncHandler(async (req, res) => {
 });
 
 const findFacultyByPrevCourseId = asyncHandler(async (req, res) => {
-  const { courseId } = req.params;
-  const courseExists = await Course.findById(courseId);
+  const { courseId, institutionId } = req.params;
+  const courseExists = await Course.findOne({ _id: courseId, institutionId });
   if (!courseExists) {
     throw new ApiError("Course not found", 404);
   }
-  const faculties = await Faculty.find({ "prevCourses.courseId": courseId });
+  const faculties = await Faculty.find({
+    institutionId,
+    isActive: true,
+    "prevCourses.courseId": courseId
+  }).populate("userId", "name avatar").lean();
   if (faculties.length === 0) {
     throw new ApiError("No faculties found for this previous course", 404);
   }
@@ -199,15 +209,21 @@ const findFacultyByPrevCourseId = asyncHandler(async (req, res) => {
 });
 
 const findFacultiesByCourseAndBatch = asyncHandler(async (req, res) => {
-  const { courseId, batch } = req.params;
-  const courseExists = await Course.findById(courseId);
+  const { courseId, batch, institutionId } = req.params;
+  const courseExists = await Course.findOne({ _id: courseId, institutionId });
   if (!courseExists) {
     throw new ApiError("Course not found", 404);
   }
   const faculties = await Faculty.find({
-    "courses.courseId": courseId,
-    "courses.batch": batch
-  });
+    institutionId,
+    isActive: true,
+    courses: {
+      $elemMatch: {
+        courseId,
+        batch
+      }
+    }
+  }).populate("userId", "name avatar").lean();
   if (faculties.length === 0) {
     throw new ApiError("No faculties found for this course and batch", 404);
   }
@@ -217,20 +233,61 @@ const findFacultiesByCourseAndBatch = asyncHandler(async (req, res) => {
 });
 
 const findFacultiesByPrevCourseAndBatch = asyncHandler(async (req, res) => {
-  const { courseId, batch } = req.params;
-  const courseExists = await Course.findById(courseId);
-  if (!courseExists) {
-    throw new ApiError("Course not found", 404);
-  }
+  const { courseId, batch, institutionId } = req.params;
+  const courseExists = await Course.findOne({ _id: courseId, institutionId });
+  if (!courseExists) throw new ApiError("Course not found", 404);
+
   const faculties = await Faculty.find({
-    "prevCourses.courseId": courseId,
-    "prevCourses.batch": batch
-  });
+    institutionId,
+    isActive: true,
+    prevCourses: {
+      $elemMatch: {
+        courseId,
+        batch
+      }
+    }
+  }).populate("userId", "name avatar").lean();
   if (faculties.length === 0) {
     throw new ApiError("No faculties found for this previous course and batch", 404);
   }
   res.json(
     new ApiResponse("Faculties fetched successfully", 200, faculties)
+  );
+});
+
+const findStudentByCourseId = asyncHandler(async (req, res) => {
+  const { courseId, institutionId } = req.params;
+  const courseExists = await Course.findOne({ _id: courseId, institutionId });
+  if (!courseExists) throw new ApiError("Course not found", 404);
+  const students = await Student.find({
+    institutionId,
+    isActive: true,
+    courseIds: { $in: [courseId] }
+  }).populate("userId", "name avatar enrollmentNumber").lean();
+  if (students.length === 0) {
+    throw new ApiError("No students found for this course", 404);
+  }
+  res.json(
+    new ApiResponse("Students fetched successfully", 200, students)
+  );
+});
+
+const findStudentByPrevCourseId = asyncHandler(async (req, res) => {
+  const { courseId, institutionId } = req.params;
+  const courseExists = await Course.findOne({ _id: courseId, institutionId });
+  if (!courseExists) {
+    throw new ApiError("Course not found", 404);
+  }
+  const students = await Student.find({
+    institutionId,
+    isActive: true,
+    prevCourses: { $elemMatch: { courseId } }
+  }).populate("userId", "name avatar enrollmentNumber").lean();
+  if (students.length === 0) {
+    throw new ApiError("No students found for this previous course", 404);
+  }
+  res.json(
+    new ApiResponse("Students fetched successfully", 200, students)
   );
 });
 
@@ -245,5 +302,7 @@ export {
   findFacultyByCourseId,
   findFacultyByPrevCourseId,
   findFacultiesByCourseAndBatch,
-  findFacultiesByPrevCourseAndBatch
+  findFacultiesByPrevCourseAndBatch,
+  findStudentByCourseId,
+  findStudentByPrevCourseId,
 };
