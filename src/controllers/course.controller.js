@@ -174,7 +174,9 @@ const findFacultyByCourseId = asyncHandler(async (req, res) => {
   if (!courseExists) {
     throw new ApiError("Course not found", 404);
   }
-  const faculties = await Faculty.find({ "courses.courseId": courseId });
+  const faculties = await Faculty.find({
+    "courses.courseId": courseId
+  }).populate("userId", "name avatar");
   if (faculties.length === 0) {
     throw new ApiError("No faculties found for this course", 404);
   }
@@ -189,7 +191,9 @@ const findFacultyByPrevCourseId = asyncHandler(async (req, res) => {
   if (!courseExists) {
     throw new ApiError("Course not found", 404);
   }
-  const faculties = await Faculty.find({ "prevCourses.courseId": courseId });
+  const faculties = await Faculty.find({
+    "prevCourses.courseId": courseId
+  }).populate("userId", "name avatar");
   if (faculties.length === 0) {
     throw new ApiError("No faculties found for this previous course", 404);
   }
@@ -207,7 +211,7 @@ const findFacultiesByCourseAndBatch = asyncHandler(async (req, res) => {
   const faculties = await Faculty.find({
     "courses.courseId": courseId,
     "courses.batch": batch
-  });
+  }).populate("userId", "name avatar");
   if (faculties.length === 0) {
     throw new ApiError("No faculties found for this course and batch", 404);
   }
@@ -225,7 +229,7 @@ const findFacultiesByPrevCourseAndBatch = asyncHandler(async (req, res) => {
   const faculties = await Faculty.find({
     "prevCourses.courseId": courseId,
     "prevCourses.batch": batch
-  });
+  }).populate("userId", "name avatar");
   if (faculties.length === 0) {
     throw new ApiError("No faculties found for this previous course and batch", 404);
   }
