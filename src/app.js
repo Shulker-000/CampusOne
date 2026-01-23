@@ -11,8 +11,6 @@ import studentRoutes from './routes/student.routes.js';
 import importRoutes from './routes/import.route.js';
 import branchRoutes from './routes/branch.routes.js';
 import timetableRoutes from './routes/timetable.routes.js';
-import sessionRoutes from './routes/attendenceSession.routes.js';
-import attendenceRoutes from './routes/attendenceRecord.routes.js';
 
 const app = express();
 
