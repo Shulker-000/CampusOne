@@ -11,6 +11,7 @@ import studentRoutes from './routes/student.routes.js';
 import importRoutes from './routes/import.route.js';
 import branchRoutes from './routes/branch.routes.js';
 import timetableRoutes from './routes/timetable.routes.js';
+import sessionRoutes from './routes/attendenceSession.routes.js';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/students', studentRoutes);
 app.use('/api/import', importRoutes);
 app.use('/api/branches', branchRoutes);
 app.use('/api/timetableSlots', timetableRoutes);
+app.use('/api/attendance', sessionRoutes);
 
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).json({
