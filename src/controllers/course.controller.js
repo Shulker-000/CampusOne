@@ -256,6 +256,59 @@ const modifyStatus = asyncHandler(async (req, res) => {
   );
 });
 
+const finishCourseForFaculties = asyncHandler(async (req, res) => {
+  const { courseId, institutionId } = req.params;
+
+  const course = await Course.findById(courseId);
+  if (!course) throw new ApiError("Course does not exist", 404);
+
+  const institution = await Institution.findById(institutionId);
+  if (!institution) throw new ApiError("Institution does not exist", 404);
+
+  const count = await Faculty.countDocuments({
+    institutionId,
+    isActive: true,
+    "courses.courseId": toObjectId(courseId)
+  });
+
+  await Faculty.updateMany(
+    {
+      institutionId,
+      isActive: true,
+      "courses.courseId": toObjectId(courseId)
+    },
+    [
+      {
+        $set: {
+          prevCourses: {
+            $concatArrays: [
+              "$prevCourses",
+              {
+                $filter: {
+                  input: "$courses",
+                  cond: { $eq: ["$$this.courseId", toObjectId(courseId)] }
+                }
+              }
+            ]
+          },
+          courses: {
+            $filter: {
+              input: "$courses",
+              cond: { $ne: ["$$this.courseId", toObjectId(courseId)] }
+            }
+          }
+        }
+      }
+    ]
+  );
+
+  res.json(new ApiResponse(
+    "Course successfully finished for faculties",
+    200,
+    { affected: count }
+  ));
+});
+
 const findFacultyByCourseId = asyncHandler(async (req, res) => {
   const { courseId, institutionId } = req.params;
 
@@ -338,8 +391,6 @@ const deleteCourseAndPrevCourseFromFaculty = asyncHandler(async (req, res) => {
     )
   );
 });
-
-
 
 const findFacultiesByCourseAndBatch = asyncHandler(async (req, res) => {
   const { courseId, institutionId, batch } = req.params;
@@ -604,9 +655,6 @@ const deleteCourseAndPrevCourseFromStudent = asyncHandler(async (req, res) => {
   );
 });
 
-
-
-
 export {
   createCourse,
   getCoursesByDepartment,
@@ -614,6 +662,7 @@ export {
   updateCourse,
   deleteCourse,
   modifyStatus,
+  finishCourseForFaculties,
   getCourseByInstitution,
   findFacultyByCourseId,
   findFacultyByPrevCourseId,
