@@ -304,6 +304,43 @@ const findFacultyByPrevCourseId = asyncHandler(async (req, res) => {
   );
 });
 
+const deleteCourseAndPrevCourseFromFaculty = asyncHandler(async (req, res) => {
+  const { courseId, institutionId } = req.params;
+
+  const courseExist = await Course.findById(courseId);
+  if (!courseExist) throw new ApiError("Course does not exist", 404);
+
+  const institutionExist = await Institution.findById(institutionId);
+  if (!institutionExist) throw new ApiError("Institution does not exist", 404);
+
+  await Faculty.updateMany(
+    {
+      institutionId,
+      "courses.courseId": toObjectId(courseId),
+    },
+    {
+      $pull: { courses: { courseId: toObjectId(courseId) } },
+    }
+  );
+  await Faculty.updateMany(
+    {
+      institutionId,
+      "prevCourses.courseId": toObjectId(courseId),
+    },
+    {
+      $pull: { prevCourses: { courseId: toObjectId(courseId) } },
+    }
+  );
+  res.json(
+    new ApiResponse(
+      "Course removed from faculty course & prevCourse records",
+      200
+    )
+  );
+});
+
+
+
 const findFacultiesByCourseAndBatch = asyncHandler(async (req, res) => {
   const { courseId, institutionId, batch } = req.params;
 
@@ -529,6 +566,45 @@ const findStudentByInstitutionPrevCourse = asyncHandler(async (req, res) => {
   res.json(new ApiResponse("Students fetched successfully", 200, students));
 });
 
+const deleteCourseAndPrevCourseFromStudent = asyncHandler(async (req, res) => {
+  const { courseId, institutionId } = req.params;
+
+  const courseExist = await Course.findById(courseId);
+  if (!courseExist) throw new ApiError("Course do not exist", 404);
+
+  const institutionExist = await Institution.findById(institutionId);
+  if (!institutionExist) throw new ApiError("Institution do not exist", 404);
+
+  await Student.updateMany(
+    {
+      institutionId,
+      isActive: true,
+      courseIds: toObjectId(courseId),
+    },
+    {
+      $pull: { courseIds: toObjectId(courseId) },
+    }
+  );
+  await Student.updateMany(
+    {
+      institutionId,
+      isActive: true,
+      "prevCourses.courseId": toObjectId(courseId),
+    },
+    {
+      $pull: { prevCourses: { courseId: toObjectId(courseId) } },
+    }
+  );
+
+  res.json(
+    new ApiResponse(
+      "Course removed from student course & prevCourse records",
+      200
+    )
+  );
+});
+
+
 
 
 export {
@@ -543,8 +619,10 @@ export {
   findFacultyByPrevCourseId,
   findFacultiesByCourseAndBatch,
   findFacultiesByPrevCourseAndBatch,
+  deleteCourseAndPrevCourseFromFaculty,
   findStudentByCourseId,
   findStudentByPrevCourseId,
   findStudentByInstitutionCourse,
-  findStudentByInstitutionPrevCourse
+  findStudentByInstitutionPrevCourse,
+  deleteCourseAndPrevCourseFromStudent
 };
