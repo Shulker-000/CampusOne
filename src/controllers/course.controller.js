@@ -16,16 +16,6 @@ const assertObjectId = (id, field = "id") => {
 
 const toObjectId = (id) => new mongoose.Types.ObjectId(id);
 
-const assertCourseExists = async (courseId, departmentId) => {
-  assertObjectId(courseId, "courseId");
-  assertObjectId(departmentId, "departmentId");
-  const exists = await Course.findOne({
-    _id: courseId,
-    departmentId
-  });
-  if (!exists) throw new ApiError("Course not found", 404);
-};
-
 const createCourse = asyncHandler(async (req, res) => {
   const {
     departmentId,
@@ -267,10 +257,18 @@ const modifyStatus = asyncHandler(async (req, res) => {
 });
 
 const findFacultyByCourseId = asyncHandler(async (req, res) => {
-  const { courseId, departmentId } = req.params;
-  await assertCourseExists(courseId, departmentId);
+  const { courseId, institutionId } = req.params;
+
+  const courseExist = await Course.findById(courseId);
+  if (!courseExist)
+    throw new ApiError('Course do not exist', 404);
+
+  const institutionExist = await Institution.findById(institutionId);
+  if (!institutionExist)
+    throw new ApiError('Institution do not exist', 404);
+
   const faculties = await Faculty.find({
-    departmentId,
+    institutionId,
     isActive: true,
     "courses.courseId": toObjectId(courseId)
   }).populate("userId", "name avatar").lean();
@@ -283,10 +281,18 @@ const findFacultyByCourseId = asyncHandler(async (req, res) => {
 });
 
 const findFacultyByPrevCourseId = asyncHandler(async (req, res) => {
-  const { courseId, departmentId } = req.params;
-  await assertCourseExists(courseId, departmentId);
+  const { courseId, institutionId } = req.params;
+
+  const courseExist = await Course.findById(courseId);
+  if (!courseExist)
+    throw new ApiError('Course do not exist', 404);
+
+  const institutionExist = await Institution.findById(institutionId);
+  if (!institutionExist)
+    throw new ApiError('Institution do not exist', 404);
+
   const faculties = await Faculty.find({
-    departmentId,
+    institutionId,
     isActive: true,
     "prevCourses.courseId": toObjectId(courseId)
   }).populate("userId", "name avatar").lean();
@@ -299,10 +305,18 @@ const findFacultyByPrevCourseId = asyncHandler(async (req, res) => {
 });
 
 const findFacultiesByCourseAndBatch = asyncHandler(async (req, res) => {
-  const { courseId, departmentId, batch } = req.params;
-  await assertCourseExists(courseId, departmentId);
+  const { courseId, institutionId, batch } = req.params;
+
+  const courseExist = await Course.findById(courseId);
+  if (!courseExist)
+    throw new ApiError('Course do not exist', 404);
+
+  const institutionExist = await Institution.findById(institutionId);
+  if (!institutionExist)
+    throw new ApiError('Institution do not exist', 404);
+
   const faculties = await Faculty.find({
-    departmentId,
+    institutionId,
     isActive: true,
     courses: {
       $elemMatch: {
@@ -320,11 +334,17 @@ const findFacultiesByCourseAndBatch = asyncHandler(async (req, res) => {
 });
 
 const findFacultiesByPrevCourseAndBatch = asyncHandler(async (req, res) => {
-  const { courseId, departmentId, batch } = req.params;
-  await assertCourseExists(courseId, departmentId);
+  const { courseId, institutionId, batch } = req.params;
+  const courseExist = await Course.findById(courseId);
+  if (!courseExist)
+    throw new ApiError('Course do not exist', 404);
+
+  const institutionExist = await Institution.findById(institutionId);
+  if (!institutionExist)
+    throw new ApiError('Institution do not exist', 404);
 
   const faculties = await Faculty.find({
-    departmentId,
+    institutionId,
     isActive: true,
     prevCourses: {
       $elemMatch: {
@@ -468,21 +488,21 @@ const findStudentByInstitutionCourse = asyncHandler(async (req, res) => {
   const { courseId, institutionId } = req.params;
 
   const courseExist = await Course.findById(courseId);
-  if(!courseExist) 
-    throw new ApiError('Course do not exist',404);
+  if (!courseExist)
+    throw new ApiError('Course do not exist', 404);
 
   const institutionExist = await Institution.findById(institutionId);
-  if(!institutionExist)
-    throw new ApiError('Institution do not exist',404);
+  if (!institutionExist)
+    throw new ApiError('Institution do not exist', 404);
 
   const students = await Student.find({
     institutionId,
     isActive: true,
     courseIds: toObjectId(courseId)
   })
-  .populate("userId", "name avatar")
-  .select("enrollmentNumber semester branchId batch")
-  .lean();
+    .populate("userId", "name avatar")
+    .select("enrollmentNumber semester branchId batch")
+    .lean();
 
   if (!students.length)
     throw new ApiError("No students found for this course", 404);
@@ -497,11 +517,11 @@ const findStudentByInstitutionPrevCourse = asyncHandler(async (req, res) => {
   const students = await Student.find({
     institutionId,
     isActive: true,
-    prevCourses: { $elemMatch: { courseId: toObjectId(courseId) }}
+    prevCourses: { $elemMatch: { courseId: toObjectId(courseId) } }
   })
-  .populate("userId", "name avatar")
-  .select("enrollmentNumber semester branchId batch prevCourses")
-  .lean();
+    .populate("userId", "name avatar")
+    .select("enrollmentNumber semester branchId batch prevCourses")
+    .lean();
 
   if (!students.length)
     throw new ApiError("No students found for this previous course", 404);
