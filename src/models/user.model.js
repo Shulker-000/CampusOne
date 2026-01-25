@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
             unique: true,
             trim: true
         },
+        // TODO: add DOB
         password: {
             type: String,
             required: true
