@@ -655,6 +655,23 @@ const deleteCourseAndPrevCourseFromStudent = asyncHandler(async (req, res) => {
   );
 });
 
+const checkCourseCodeExists = asyncHandler(async (req, res) => {
+  const { departmentId, code } = req.body;
+  if (!departmentId || !code) {
+    throw new ApiError("Course code is required", 400);
+  }
+
+  const exists = await Course.findOne({ departmentId, code });
+
+  res.json(
+    new ApiResponse(
+      exists ? "Course code already exists" : "Course code available",
+      200,
+      { exists: !!exists }
+    )
+  );
+});
+
 export {
   createCourse,
   getCoursesByDepartment,
@@ -673,5 +690,6 @@ export {
   findStudentByPrevCourseId,
   findStudentByInstitutionCourse,
   findStudentByInstitutionPrevCourse,
-  deleteCourseAndPrevCourseFromStudent
+  deleteCourseAndPrevCourseFromStudent,
+  checkCourseCodeExists
 };

@@ -473,6 +473,23 @@ const deleteInstitution = asyncHandler(async (req, res) => {
   }
 });
 
+const checkInstitutionCodeExists = asyncHandler(async (req, res) => {
+  const { institutionId, code } = req.body;
+  if (!institutionId || !code) {
+    throw new ApiError("Institution code is required", 400);
+  }
+
+  const exists = await Institution.findOne({ institutionId, code });
+
+  res.json(
+    new ApiResponse(
+      exists ? "Institution code already exists" : "Institution code available",
+      200,
+      { exists: !!exists }
+    )
+  );
+});
+
 export {
   registerInstitution,
   loginInstitution,
@@ -485,5 +502,6 @@ export {
   verifyInstitutionEmail,
   updateInstitutionAvatar,
   updateInstitution,
-  deleteInstitution
+  deleteInstitution,
+  checkInstitutionCodeExists
 };

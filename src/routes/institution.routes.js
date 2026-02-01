@@ -12,6 +12,7 @@ import {
     updateInstitution,
     deleteInstitution,
     refreshAccessToken,
+    checkInstitutionCodeExists,
 } from "../controllers/institution.controller.js";
 
 import { validateInstitutionJWT } from "../middlewares/institutionAuth.middleware.js";
@@ -31,6 +32,7 @@ router.get("/verify-email/:token", verifyInstitutionEmail);
 // PROTECTED ROUTES
 router.get("/current-institution", validateInstitutionJWT, getCurrentInstitution);
 router.post("/logout", validateInstitutionJWT, logoutInstitution);
+router.post("/code-exists", validateInstitutionJWT, checkInstitutionCodeExists);
 router.post(
     "/send-email-verification",
     validateInstitutionJWT,

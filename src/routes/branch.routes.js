@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   changeBranchStatus,
+  checkBranchCodeExists,
   createBranch,
   deleteBranch,
   getBranchByDepartment,
@@ -8,6 +9,7 @@ import {
   getBranchesByInstitution,
   updateBranch
 } from '../controllers/branch.controller.js';
+import { validateInstitutionJWT } from '../middlewares/institutionAuth.middleware.js';
 
 const router = Router();
 
@@ -21,5 +23,6 @@ router.post('/institutions/:institutionId/branches', createBranch);
 router.put('/branches/:branchId', updateBranch);
 router.delete('/branches/:branchId', deleteBranch);
 router.patch('/branches/:branchId/status', changeBranchStatus);
+router.post("/code-exists", validateInstitutionJWT, checkBranchCodeExists);
 
 export default router;

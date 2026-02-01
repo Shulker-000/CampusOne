@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { validateInstitutionJWT } from '../middlewares/institutionAuth.middleware.js';
 import {
+  checkCourseCodeExists,
   createCourse,
   deleteCourse,
   deleteCourseAndPrevCourseFromFaculty,
@@ -48,5 +49,6 @@ router.post("/create-course", validateInstitutionJWT, createCourse);
 router.put("/:courseId", validateInstitutionJWT, updateCourse);
 router.delete("/:courseId", validateInstitutionJWT, deleteCourse);
 router.put("/change-status/:courseId", validateInstitutionJWT, modifyStatus);
+router.post("/code-exists", validateInstitutionJWT, checkCourseCodeExists);
 
 export default router;
