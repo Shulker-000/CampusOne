@@ -184,21 +184,16 @@ const deleteDepartment = asyncHandler(async (req, res) => {
   if (!department) {
     throw new ApiError("Department not found", 404);
   }
-  const facultyAssigned = await Faculty.findOne({ departmentId });
-  if (facultyAssigned) {
-    throw new ApiError("Cannot delete department assigned to faculty", 400);
-  }
-  const courseAssigned = await Course.findOne({ departmentId });
-  if (courseAssigned) {
-    throw new ApiError("Cannot delete department assigned to courses", 400);
-  }
-  const branchAssigned = await Branch.findOne({ departmentId });
-  if (branchAssigned) {
-    throw new ApiError("Cannot delete department assigned to branches", 400);
-  }
-    await department.deleteOne();
+  await Course.deleteMany({ departmentId });
+  await Branch.deleteMany({ departmentId });
+  await Faculty.updateMany(
+    { departmentId },
+    { $unset: { departmentId: "" }}
+  );
+  await department.deleteOne();
 
-  res.json(new ApiResponse("Department deleted successfully", 200));
+  res.json(new ApiResponse("Department and related data deleted successfully", 200)
+  );
 });
 
 export {
