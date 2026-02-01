@@ -166,7 +166,27 @@ const admissionApplicationSchema = new mongoose.Schema({
             "FINAL_REJECTED"
         ],
         default: "SUBMITTED"
-    }
+    },
+    resetPasswordToken: {
+        type: String,
+        default: null
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: null
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false
+    },
+    emailVerificationToken: {
+        type: String,
+        default: null
+    },
+    emailVerificationTokenExpires: {
+        type: Date,
+        default: null
+    },
 }, { timestamps: true });
 
 admissionApplicationSchema.pre("save", async function () {

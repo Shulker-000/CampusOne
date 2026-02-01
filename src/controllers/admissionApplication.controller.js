@@ -1,11 +1,10 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
-import { AdmissionApplication } from "../models/admissionApplication.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { cookiesOptions } from "../utils/cookiesOptions.js";
+import { AdmissionApplication } from "../models/admissionApplication.model.js";
 
 const generateApplicationNumber = () => {
   return "APP-" + crypto.randomBytes(4).toString("hex").toUpperCase();
@@ -255,9 +254,176 @@ const deleteAdmissionApplication = asyncHandler(async (req, res) => {
 
 });
 
-// TODO: change password
-// TODO: reset password
-// TODO: verify email
+const forgotAdmissionPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new ApiError("Email is required", 400);
+  }
+
+  const application = await AdmissionApplication.findOne({ email });
+  if (!application) {
+    throw new ApiError("Application not found", 404);
+  }
+
+  const resetToken = application.getResetPasswordToken();
+  await application.save({ validateBeforeSave: false });
+
+  const resetUrl = `${process.env.FRONTEND_URL}/admission/reset-password/${resetToken}`;
+
+  await sendEmail({
+    email: application.email,
+    subject: "Admission Password Reset",
+    message: `Click the link to reset your password:\n\n${resetUrl}\n\nValid for 15 minutes.`
+  });
+
+  res.json(new ApiResponse("Password reset email sent successfully", 200));
+});
+
+const resetAdmissionPassword = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    throw new ApiError("New password is required", 400);
+  }
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const application = await AdmissionApplication.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: Date.now() }
+  });
+
+  if (!application) {
+    throw new ApiError("Invalid or expired reset token", 400);
+  }
+
+  application.password = newPassword;
+  application.resetPasswordToken = null;
+  application.resetPasswordExpires = null;
+
+  await application.save();
+
+  res.json(new ApiResponse("Password reset successful", 200));
+});
+
+const sendAdmissionEmailVerification = asyncHandler(async (req, res) => {
+
+  const application = await AdmissionApplication.findById(req.user.id);
+
+  if (!application) {
+    throw new ApiError("Application not found", 404);
+  }
+
+  if (application.isEmailVerified) {
+    throw new ApiError("Email already verified", 400);
+  }
+  const verificationToken = application.getVerificationToken();
+  await application.save({ validateBeforeSave: false });
+  const verifyUrl = `${process.env.FRONTEND_URL}/admission/verify-email/${verificationToken}`;
+  await sendEmail({
+    email: application.email,
+    subject: "Verify Your Admission Email",
+    message: `Click below to verify your email:\n\n${verifyUrl}\n\nValid for 15 minutes.`
+  });
+
+  res.json(
+    new ApiResponse("Verification email sent successfully", 200)
+  );
+
+});
+
+const verifyAdmissionEmail = asyncHandler(async (req, res) => {
+  const { token } = req.params;
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  const application = await AdmissionApplication.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationTokenExpires: { $gt: Date.now() }
+  });
+
+  if (!application) {
+    throw new ApiError("Invalid or expired verification token", 400);
+  }
+
+  application.isEmailVerified = true;
+  application.emailVerificationToken = null;
+  application.emailVerificationTokenExpires = null;
+
+  await application.save();
+
+  res.json(new ApiResponse("Email verified successfully", 200));
+});
+
+const getApplicationsByInstituteAndBranch = asyncHandler(async (req, res) => {
+  const { institutionId, branchId } = req.params;
+
+  const applications = await AdmissionApplication.find({
+    institutionId,
+    branchId
+  }).select("-password -resetPasswordToken -emailVerificationToken");
+
+  if (!applications) {
+    throw new ApiError("Application not found", 404);
+  }
+
+  res.json(
+    new ApiResponse(
+      "Applications fetched successfully",
+      200,
+      applications
+    )
+  );
+});
+
+
+const getApplicationsByInstitute = asyncHandler(async (req, res) => {
+  const { institutionId } = req.params;
+
+  const applications = await AdmissionApplication.find({
+    institutionId
+  }).select("-password -resetPasswordToken -emailVerificationToken");
+
+  if (!applications) {
+    throw new ApiError("Application not found", 404);
+  }
+
+  res.json(
+    new ApiResponse(
+      "Applications fetched successfully",
+      200,
+      applications
+    )
+  );
+});
+
+
+const getApplicationById = asyncHandler(async (req, res) => {
+  const { applicationId } = req.params;
+
+  const application = await AdmissionApplication.findById(applicationId)
+    .select("-password -resetPasswordToken -emailVerificationToken");
+
+  if (!application) {
+    throw new ApiError("Application not found", 404);
+  }
+
+  res.json(
+    new ApiResponse(
+      "Application fetched successfully",
+      200,
+      application
+    )
+  );
+});
 
 
 export {
@@ -270,5 +436,12 @@ export {
   updateAdmissionApplication,
   updateAdmissionApplicationStatus,
   addAdmissionReviewLog,
-  deleteAdmissionApplication
+  deleteAdmissionApplication,
+  forgotAdmissionPassword,
+  resetAdmissionPassword,
+  sendAdmissionEmailVerification,
+  verifyAdmissionEmail,
+  getApplicationById,
+  getApplicationsByInstitute,
+  getApplicationsByInstituteAndBranch
 };
