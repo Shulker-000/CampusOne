@@ -159,6 +159,23 @@ const changeBranchStatus = asyncHandler(async (req, res) => {
     res.json(new ApiResponse("Branch status updated successfully", 200, branch));
 });
 
+const checkBranchCodeExists = asyncHandler(async (req, res) => {
+  const { institutionId, code } = req.body;
+  if (!code) {
+    throw new ApiError("Department code is required", 400);
+  }
+
+  const exists = await Branch.findOne({ code, institutionId });
+
+  return res.json(
+    new ApiResponse(
+      exists ? "Branch code already exists" : "Branch code available",
+      200,
+      { exists: !!exists }
+    )
+  );
+});
+
 
 export {
     createBranch,
@@ -167,5 +184,6 @@ export {
     getBranchByDepartment,
     updateBranch,
     deleteBranch,
-    changeBranchStatus
+    changeBranchStatus,
+    checkBranchCodeExists
 };
