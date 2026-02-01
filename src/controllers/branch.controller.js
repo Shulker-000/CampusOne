@@ -161,13 +161,13 @@ const changeBranchStatus = asyncHandler(async (req, res) => {
 
 const checkBranchCodeExists = asyncHandler(async (req, res) => {
   const { institutionId, code } = req.body;
-  if (!code) {
-    throw new ApiError("Department code is required", 400);
+  if (!institutionId || !code) {
+    throw new ApiError("Branch code is required", 400);
   }
 
-  const exists = await Branch.findOne({ code, institutionId });
+  const exists = await Branch.findOne({ institutionId, code });
 
-  return res.json(
+  res.json(
     new ApiResponse(
       exists ? "Branch code already exists" : "Branch code available",
       200,

@@ -474,14 +474,14 @@ const deleteInstitution = asyncHandler(async (req, res) => {
 });
 
 const checkInstitutionCodeExists = asyncHandler(async (req, res) => {
-  const { institutionId } = req.body;
-  if (!code) {
-    throw new ApiError("Department code is required", 400);
+  const { institutionId, code } = req.body;
+  if (!institutionId || !code) {
+    throw new ApiError("Institution code is required", 400);
   }
 
-  const exists = await Institution.findById(institutionId);
+  const exists = await Institution.findOne({ institutionId, code });
 
-  return res.json(
+  res.json(
     new ApiResponse(
       exists ? "Institution code already exists" : "Institution code available",
       200,
