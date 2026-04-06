@@ -153,15 +153,22 @@
 | GET    | `/department/:departmentId`                                 | Public          | Courses by department       |
 | GET    | `/institution/:institutionId`                               | Public          | Courses by institution      |
 | GET    | `/:courseId`                                                | Public          | Course by id                |
+| GET    | `/faculty/course/:courseId/institution/:institutionId/batch/:batch` | Public | Faculty by current course + batch |
+| GET    | `/faculty/prev-course/:courseId/institution/:institutionId/batch/:batch` | Public | Faculty by previous course + batch |
+| GET    | `/faculty/pull-course/:courseId/institution/:institutionId` | Public          | Faculty by pull course      |
+| GET    | `/faculty/finish-all/:courseId/institution/:institutionId`  | Public          | Faculty by finished course  |
 | POST   | `/create-course`                                            | Institution JWT | Create                      |
 | PUT    | `/:courseId`                                                | Institution JWT | Update                      |
 | DELETE | `/:courseId`                                                | Institution JWT | Delete                      |
 | PUT    | `/change-status/:courseId`                                  | Institution JWT | Activate/Deactivate         |
 | POST   | `/code-exists`                                              | Institution JWT | Check course code           |
+| GET    | `/student/course/:courseId/department/:departmentId`        | Public          | Students by current course + department |
+| GET    | `/student/prev-course/:courseId/department/:departmentId`   | Public          | Students by previous course + department |
 | GET    | `/faculty/course/:courseId/institution/:institutionId`      | Public          | Faculty by current course   |
 | GET    | `/faculty/prev-course/:courseId/institution/:institutionId` | Public          | Faculty by previous course  |
 | GET    | `/student/course/:courseId/institution/:institutionId`      | Public          | Students by current course  |
 | GET    | `/student/prev-course/:courseId/institution/:institutionId` | Public          | Students by previous course |
+| GET    | `/student/pull-course/:courseId/institution/:institutionId` | Public          | Students by pull course     |
 
 ---
 
@@ -259,6 +266,8 @@
 | PUT    | `/:applicationId/status`                       | Institution JWT | Update application status        |
 | PUT    | `/:applicationId/approve`                      | Institution JWT | Approve application              |
 | PUT    | `/:applicationId/reject`                       | Institution JWT | Reject application               |
+| PUT    | `/:applicationId/form-status`                  | Admission JWT   | Update form status (self)        |
+| PUT    | `/:applicationId/set-status`                   | Institution JWT | Update form status (institution) |
 | POST   | `/:applicationId/review-log`                   | Institution JWT | Add review log                   |
 | POST   | `/:applicationId/document`                     | Admission JWT   | Upload document                  |
 | PUT    | `/:applicationId/update-document/:publicId`    | Admission JWT   | Update document                  |
